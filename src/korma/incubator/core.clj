@@ -453,9 +453,9 @@
 
 (defn get-belongs-to-keys
   "Determines and returns the keys needed for belongs-to relationshiops."
-  [parent child]
+  [parent child opts]
   (let [pkk (:pk parent)
-        fkk (keyword (str (:table parent) "_id"))]
+        fkk (or (:fk opts) (keyword (str (:table parent) "_id")))]
     {:pk  (raw (eng/prefix parent pkk))
      :fk  (raw (eng/prefix child fkk))
      :fkk fkk}))
@@ -463,9 +463,9 @@
 (defn get-db-keys
   "Determines and returns the keys needed for has-one and has-many
    relationshiops."
-  [parent child]
+  [parent child opts]
   (let [pkk (:pk parent)
-        fkk (keyword (str (:table parent) "_id"))]
+        fkk (or (:fk opts) (keyword (str (:table parent) "_id")))]
     {:pk  (raw (eng/prefix parent pkk))
      :fk  (raw (eng/prefix child fkk))}))
 
@@ -475,8 +475,8 @@
   [type ent sub-ent opts]
   (condp = type
     :many-to-many [(many-to-many-keys ent sub-ent opts) sub-ent]
-    :has-one      [(get-db-keys ent sub-ent) sub-ent]
-    :belongs-to   [(get-belongs-to-keys sub-ent ent) ent]
+    :has-one      [(get-db-keys ent sub-ent opts) sub-ent]
+    :belongs-to   [(get-belongs-to-keys sub-ent ent opts) ent]
     :has-many     [(get-db-keys ent sub-ent) sub-ent]))
 
 (defn create-rel
