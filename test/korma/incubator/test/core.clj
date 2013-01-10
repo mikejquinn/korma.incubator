@@ -477,7 +477,7 @@
     (is (= actual expected))))
 
 ;; Retrieving entities with has-one and belongs-to relationships separately.
-(declare hobt1 hobt2 hobt3 hobt4)
+(declare hobt1 hobt2 hobt3 hobt4 hobt5 hobt6)
 
 (defentity hobt1
   (entity-fields :field1)
@@ -494,6 +494,14 @@
 (defentity hobt4
   (entity-fields :field2)
   (has-one hobt3))
+
+(defentity hobt5
+  (entity-fields :field5)
+  (has-one hobt6 {:fk :exotic_id}))
+
+(defentity hobt6
+  (entity-fields :field6)
+  (belongs-to hobt5 {:fk :exotic_id}))
 
 (deftest with-object-has-one-before
   (let [actual   (with-out-str (dry-run (select hobt1 (with-object hobt2))))
@@ -521,4 +529,11 @@
         expected (str "dry run :: SELECT \"hobt4\".* FROM \"hobt4\" :: []\n"
                       "dry run :: SELECT \"hobt3\".* FROM \"hobt3\" "
                       "WHERE (\"hobt3\".\"hobt4_id\" = ?) :: [1]\n")]
+    (is (= actual expected))))
+
+(deftest with-object-has-one-exotic-foreign-key
+  (let [actual   (with-out-str (dry-run (select hobt5 (with-object hobt6))))
+        expected (str "dry run :: SELECT \"hobt5\".* FROM \"hobt5\" :: []\n"
+                      "dry run :: SELECT \"hobt6\".* FROM \"hobt6\" "
+                      "WHERE (\"hobt6\".\"exotic_id\" = ?) :: [1]\n")]
     (is (= actual expected))))
